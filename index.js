@@ -9,7 +9,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 app.use(cors());
 app.use(express.json());
 
-const allData = require("./data.json");
+const allImage = require("./data.json");
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.zilkyvq.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -66,6 +66,10 @@ async function run() {
   }
 }
 run().catch(console.dir);
+
+app.get("/allImage", (req, res) => {
+  res.send(allImage);
+});
 
 app.get("/", (req, res) => {
   res.send("The server is running");
