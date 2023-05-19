@@ -3,7 +3,7 @@ const cors = require("cors");
 const app = express();
 const port = process.env.PORT || 5000;
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 // middleware
 app.use(cors());
@@ -29,9 +29,29 @@ async function run() {
 
     const toysCollection = client.db("toyMarket").collection("toys");
 
-    app.get("/allData", async (req, res) => {
-      const cursor = toysCollection.find();
-      const result = await cursor.toArray();
+    app.get("/allData/:text", async (req, res) => {
+      console.log(req.params.text);
+      if (
+        req.params.text == "lego-cars" ||
+        req.params.text == "lego-city" ||
+        req.params.text == "lego-architecture"
+      ) {
+        result = await toysCollection
+          .find({ subcategory: req.params.text })
+          .toArray();
+        return res.send(result);
+      }
+      result = await toysCollection.find().toArray();
+      res.send(result);
+      // const cursor = ;
+      // const result = await toysCollection.find().cursor.toArray();
+      // res.send(result);
+    });
+
+    app.get("/allData/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await toysCollection.findOne(query);
       res.send(result);
     });
 
