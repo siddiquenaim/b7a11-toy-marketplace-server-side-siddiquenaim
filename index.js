@@ -18,33 +18,36 @@ const client = new MongoClient(uri, {
     strict: true,
     deprecationErrors: true,
   },
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  maxPoolSize: 10,
 });
 
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    client.connect();
+    client.connect((err) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+    });
 
     const toysCollection = client.db("toyMarket").collection("toys");
     const imageCollection = client.db("toyMarket").collection("gallery");
-    const indexKeys = { name: 1 };
-    const indexOptions = { name: "toyName" };
-    const result = await toysCollection.createIndex(indexKeys, indexOptions);
+    // const indexKeys = { name: 1 };
+    // const indexOptions = { name: "toyName" };
+    // const result = await toysCollection.createIndex(indexKeys, indexOptions);
 
+    // all data
     app.get("/allData", async (req, res) => {
       const result = await toysCollection.find().toArray();
       res.send(result);
     });
 
-    app.post("/allData", async (req, res) => {
-      const toyInfo = req.body;
-      // console.log(toyInfo);
-      const result = await toysCollection.insertOne(toyInfo);
-      res.send(result);
-    });
-
+    // filtering by subcategory
     app.get("/allData/:text", async (req, res) => {
-      console.log(req.params.text);
+      // console.log(req.params.text);
       if (
         req.params.text == "lego-cars" ||
         req.params.text == "lego-city" ||
@@ -59,8 +62,17 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/toySearchByName/:text", async (req, res) => {
-      const searchText = req.params.text;
+    // adding new data to all data
+    app.post("/allData", async (req, res) => {
+      const toyInfo = req.body;
+      // console.log(toyInfo);
+      const result = await toysCollection.insertOne(toyInfo);
+      res.send(result);
+    });
+
+    // search feature
+    app.get("/toySearch", async (req, res) => {
+      const searchText = req.query.text;
       const result = await toysCollection
         .find({
           $or: [
@@ -73,6 +85,21 @@ async function run() {
       res.send(result);
     });
 
+    // app.get("/toySearchByName/:text", async (req, res) => {
+    //   const searchText = req.params.text;
+    //   const result = await toysCollection
+    //     .find({
+    //       $or: [
+    //         {
+    //           name: { $regex: searchText, $options: "i" },
+    //         },
+    //       ],
+    //     })
+    //     .toArray();
+    //   res.send(result);
+    // });
+
+    // single toy information
     app.get("/toy/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -80,12 +107,32 @@ async function run() {
       res.send(result);
     });
 
+    // limiting number of toys
     app.get("/toys", async (req, res) => {
       const limit = parseInt(req.query.limit) || 20;
       const toys = await toysCollection.find().limit(limit).toArray();
       res.json(toys);
     });
 
+    // filtering toys added by user
+    app.get("/myToys", async (req, res) => {
+      let query = {};
+      if (req.query.sellerEmail) {
+        query = { sellerEmail: req.query.sellerEmail };
+      }
+      const result = await toysCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // delete operation
+    app.delete("/myToys/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await toysCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // gallery pictures
     app.get("/gallery", async (req, res) => {
       const result = await imageCollection.find().toArray();
       res.send(result);
