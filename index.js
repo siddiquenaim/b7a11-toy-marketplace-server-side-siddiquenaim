@@ -31,6 +31,18 @@ async function run() {
     const indexOptions = { name: "toyName" };
     const result = await toysCollection.createIndex(indexKeys, indexOptions);
 
+    app.get("/allData", async (req, res) => {
+      const result = await toysCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/allData", async (req, res) => {
+      const toyInfo = req.body;
+      // console.log(toyInfo);
+      const result = await toysCollection.insertOne(toyInfo);
+      res.send(result);
+    });
+
     app.get("/allData/:text", async (req, res) => {
       console.log(req.params.text);
       if (
