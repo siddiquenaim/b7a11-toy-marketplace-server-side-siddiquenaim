@@ -85,20 +85,6 @@ async function run() {
       res.send(result);
     });
 
-    // app.get("/toySearchByName/:text", async (req, res) => {
-    //   const searchText = req.params.text;
-    //   const result = await toysCollection
-    //     .find({
-    //       $or: [
-    //         {
-    //           name: { $regex: searchText, $options: "i" },
-    //         },
-    //       ],
-    //     })
-    //     .toArray();
-    //   res.send(result);
-    // });
-
     // single toy information
     app.get("/toy/:id", async (req, res) => {
       const id = req.params.id;
@@ -174,6 +160,3 @@ app.get("/", (req, res) => {
 app.listen(port, (req, res) => {
   console.log(`The server is running on port: ${port}`);
 });
-
-// toyMarket
-// gJdJZBP6RJAOnNYL
