@@ -27,6 +27,9 @@ async function run() {
 
     const toysCollection = client.db("toyMarket").collection("toys");
     const imageCollection = client.db("toyMarket").collection("gallery");
+    const indexKeys = { name: 1 };
+    const indexOptions = { name: "toyName" };
+    const result = await toysCollection.createIndex(indexKeys, indexOptions);
 
     app.get("/allData/:text", async (req, res) => {
       console.log(req.params.text);
@@ -44,11 +47,31 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/toySearchByName/:text", async (req, res) => {
+      const searchText = req.params.text;
+      const result = await toysCollection
+        .find({
+          $or: [
+            {
+              name: { $regex: searchText, $options: "i" },
+            },
+          ],
+        })
+        .toArray();
+      res.send(result);
+    });
+
     app.get("/toy/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await toysCollection.findOne(query);
       res.send(result);
+    });
+
+    app.get("/toys", async (req, res) => {
+      const limit = parseInt(req.query.limit) || 20;
+      const toys = await toysCollection.find().limit(limit).toArray();
+      res.json(toys);
     });
 
     app.get("/gallery", async (req, res) => {
