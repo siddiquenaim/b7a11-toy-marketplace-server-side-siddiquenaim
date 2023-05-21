@@ -106,7 +106,17 @@ async function run() {
       if (req.query.sellerEmail) {
         query = { sellerEmail: req.query.sellerEmail };
       }
-      const result = await toysCollection.find(query).toArray();
+      let sortDirection = 1; // Default sort direction is ascending (1)
+
+      if (req.query.sort === "desc") {
+        sortDirection = -1; // Set sort direction to descending (-1)
+      }
+
+      const result = await toysCollection
+        .find(query)
+        .sort({ price: sortDirection })
+        .toArray();
+
       res.send(result);
     });
 
